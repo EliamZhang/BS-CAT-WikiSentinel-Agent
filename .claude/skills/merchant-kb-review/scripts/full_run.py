@@ -22,7 +22,7 @@ CATEGORIES = {
 VERDICTS = ('无需更改', '建议修改', '待核实', '建议删除行')
 DEFAULT_RUN = 'C:/Users/zhangyuliang02/AppData/Local/Temp/kb_llm_review/full'
 DEFAULT_RULE_WB = 'merchant_kb_全量复核_漏检与调整.xlsx'
-DEFAULT_OUT = 'merchant_kb_全量复核_AI.xlsx'
+DEFAULT_OUT = 'merchant_kb_reviewed_AI.xlsx'
 
 
 def now():

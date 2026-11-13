@@ -41,7 +41,7 @@ python .claude/skills/merchant-kb-review/scripts/full_run.py \
 # 6. 随时导出全量工作簿；未检测行仍显示原规则结果
 python .claude/skills/merchant-kb-review/scripts/full_run.py \
   --run-dir C:/Users/zhangyuliang02/AppData/Local/Temp/kb_llm_review/full export \
-  --out merchant_kb_全量复核_AI.xlsx
+  --out merchant_kb_reviewed_AI.xlsx
 ```
 
 ## 规则复核引擎（先跑规则，再跑 AI）
@@ -116,7 +116,7 @@ python $SKILL/rule_review.py --run-dir $RUN stats             # 覆盖率/规则
 - `rule_review.py apply` 可重复执行；它只处理 `pending` 行，已 done 行不会重复。AI 批次里若仍有规则可处理的变体，说明该规则尚未稳定，应先 `analyze` 再决定是否扩规则。
 - `status` 输出 `done/done_ai/done_rule/queued/pending`、`last_done_idx`、`next_pending_idx`、`pending_result_files` 和 open 批次，并写入 `progress.json`；这是判断“从哪里继续”的唯一依据。
 - 导出工作簿的 `说明` 工作表也记录“下一个待检测 idx”和未完成批次数，可直接对照。
-- 默认导出到 `merchant_kb_全量复核_AI.xlsx`，不覆盖原规则工作簿。只有 `全量核查` 和 `说明` 两张表会被生成；原工作簿的 `复核问题明细`、`关键词冲突` 等辅助表不会重建。
+- 默认导出到 `merchant_kb_reviewed_AI.xlsx`，不覆盖原规则工作簿。只有 `全量核查` 和 `说明` 两张表会被生成；原工作簿的 `复核问题明细`、`关键词冲突` 等辅助表不会重建。
 - 全量约 874,777 行；按 100 行/批、10 个并行代理估算，约 7 天、6.5 亿 tokens，建议分多次运行。
 
 全量工作簿 `全量核查` 列（默认 15 列，与原工作簿同格式 + 2 列）：
