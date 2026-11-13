@@ -15,15 +15,6 @@ from datetime import datetime
 
 DEFAULT_RUN = 'C:/Users/zhangyuliang02/AppData/Local/Temp/kb_llm_review/full'
 
-CATEGORIES = {
-    'Home Improvement', 'Dining Out', 'Health', 'Groceries', 'Transport',
-    'Financial Institutions', 'Retail', 'Automotive', 'Personal Care',
-    'Information', 'Education', 'Entertainment', 'Travel',
-    'Gyms and other memberships', 'Rent', 'Pet Care', 'Donations',
-    'Insurance', 'Utilities', 'Telecommunications', 'Subscription TV',
-    'Department Stores',
-}
-
 
 def now():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
