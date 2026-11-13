@@ -1,0 +1,5 @@
+# Feature-local data and runtime state (kept out of git)
+data/
+work/
+__pycache__/
+*.pyc

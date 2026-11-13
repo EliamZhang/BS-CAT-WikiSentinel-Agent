@@ -11,37 +11,43 @@ description: 逐行 LLM 复核商户知识库（商户名/关键词/类目），
 
 核心原则：**模型逐行判断，不依赖规则结论；不确定就标待核实，不臆造商户、关键词或类目。**
 
+## 目录约定（每个功能完全独立）
+
+```text
+.claude/skills/merchant-kb-review/
+├── SKILL.md       功能说明与操作手册
+├── prompts/       子代理提示词
+├── scripts/       功能脚本
+├── data/          输入数据与导出结果（不进 git）
+└── work/          运行状态、批次与结果（不进 git，可随时中断续跑）
+```
+
+新增功能时新建同级 `skills/<feature>/` 目录即可，功能之间不共享代码、数据或运行状态。
+
 ## 全量模式（可中断续跑，推荐）
 
 用 `full_run.py` 把 874,777 行全部纳入，状态存 SQLite，Excel 只是导出结果；任何时候中断，重跑 `status`/`next` 即可续上。
 
-以下命令在知识库目录（`merchant_kb.csv` 所在目录）执行。
+以下命令在 Agent 根目录执行。`--run-dir` 默认 `work/full`，导出默认 `data/merchant_kb_reviewed_AI.xlsx`，均位于本功能目录内，无需传参。
 
 ```bash
-# 1. 初始化：导入 CSV + 原全量复核工作簿的规则列
-python .claude/skills/merchant-kb-review/scripts/full_run.py \
-  --run-dir C:/Users/zhangyuliang02/AppData/Local/Temp/kb_llm_review/full init \
-  --kb merchant_kb.csv \
-  --rule-workbook merchant_kb_全量复核_漏检与调整.xlsx
+# 1. 初始化：导入 CSV；data/ 下有原规则工作簿时自动带上 A–M 列
+python .claude/skills/merchant-kb-review/scripts/full_run.py init \
+  --kb .claude/skills/merchant-kb-review/data/merchant_kb.csv
 
 # 2. 生成待复核批次（已有 open 批次会原样返回，不会重复分配）
-python .claude/skills/merchant-kb-review/scripts/full_run.py \
-  --run-dir C:/Users/zhangyuliang02/AppData/Local/Temp/kb_llm_review/full next --n 1000 --batch-size 100
+python .claude/skills/merchant-kb-review/scripts/full_run.py next --n 1000 --batch-size 100
 
-# 3. 子代理按 prompts/REVIEWER.md 复核，结果写到 .../full/results/batch_XXXXX.jsonl
+# 3. 子代理按 prompts/REVIEWER.md 复核，结果写到 work/full/results/batch_XXXXX.jsonl
 
 # 4. 回收结果；缺失的结果行会自动退回 pending
-python .claude/skills/merchant-kb-review/scripts/full_run.py \
-  --run-dir C:/Users/zhangyuliang02/AppData/Local/Temp/kb_llm_review/full ingest
+python .claude/skills/merchant-kb-review/scripts/full_run.py ingest
 
 # 5. 查看进度（同时写 progress.json）
-python .claude/skills/merchant-kb-review/scripts/full_run.py \
-  --run-dir C:/Users/zhangyuliang02/AppData/Local/Temp/kb_llm_review/full status
+python .claude/skills/merchant-kb-review/scripts/full_run.py status
 
 # 6. 随时导出全量工作簿；未检测行仍显示原规则结果
-python .claude/skills/merchant-kb-review/scripts/full_run.py \
-  --run-dir C:/Users/zhangyuliang02/AppData/Local/Temp/kb_llm_review/full export \
-  --out merchant_kb_reviewed_AI.xlsx
+python .claude/skills/merchant-kb-review/scripts/full_run.py export
 ```
 
 ## 规则复核引擎（先跑规则，再跑 AI）
@@ -49,16 +55,15 @@ python .claude/skills/merchant-kb-review/scripts/full_run.py \
 `rule_review.py` 用从 AI 结论中提炼的高精度机械规则处理可确定的重复劳动；规则只删除「去掉前缀/噪声后与同列表另一保留词完全相同」的变体，因此不会降低银行流水匹配覆盖。语义判断（类目、他人关键词、待核实、删除行）仍交给 AI。
 
 ```bash
-RUN=C:/Users/zhangyuliang02/AppData/Local/Temp/kb_llm_review/full
 SKILL=.claude/skills/merchant-kb-review/scripts
 
 # 持续沉淀：用已有 AI 结论评估各规则命中与一致率，输出 rule_analysis.json
-python $SKILL/rule_review.py --run-dir $RUN analyze
+python $SKILL/rule_review.py analyze
 
 # 对全部 pending 行应用规则；命中行写回状态库（review_source=RULE）
-python $SKILL/rule_review.py --run-dir $RUN apply
-python $SKILL/rule_review.py --run-dir $RUN apply --dry-run   # 只预览
-python $SKILL/rule_review.py --run-dir $RUN stats             # 覆盖率/规则分布
+python $SKILL/rule_review.py apply
+python $SKILL/rule_review.py apply --dry-run   # 只预览
+python $SKILL/rule_review.py stats             # 覆盖率/规则分布
 ```
 
 当前规则（v1.1，均以 AI 结果验证）：
@@ -109,7 +114,7 @@ python $SKILL/rule_review.py --run-dir $RUN stats             # 覆盖率/规则
 ## 规则与限制
 
 - `init` 只跑一次；要重来必须加 `--reset`，会清空该 run-dir 的状态和批次。首次可加 `--limit 1000` 验证流程，确认后再 `--reset` 全量初始化。
-- 不传 `--rule-workbook` 时，若当前目录存在 `merchant_kb_全量复核_漏检与调整.xlsx` 会自动使用；都没有则 A–M 列留空。
+- 不传 `--rule-workbook` 时，若 `data/merchant_kb_全量复核_漏检与调整.xlsx` 存在会自动使用；都没有则 A–M 列留空。
 - **中断后的续跑顺序**：先跑 `status` 看 `resume_hint`；若 `pending_result_files > 0`，先 `ingest` 回收已有结果；再跑 `next` 拿 open 批次继续；全部 done 后 `export`。
 - `next` 先返回已有 `open` 批次；进程被杀后重新执行即可，已 `done` 的行不会再次分配。
 - `ingest` 是可重复执行的；某批只回传一部分时，该批标为 `partial`，缺失行退回 `pending`，下一轮自动补批。

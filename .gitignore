@@ -1,7 +1,3 @@
-# Large data files (100MB+ total) — not tracked in git
-merchant_kb.csv
-merchant_kb_reviewed_AI.xlsx
-
 # Runtime artifacts
 .tmp/
 __pycache__/

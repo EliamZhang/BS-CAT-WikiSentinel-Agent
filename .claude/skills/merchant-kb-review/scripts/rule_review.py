@@ -13,7 +13,8 @@ import argparse, json, os, re, sqlite3, sys
 from collections import Counter, defaultdict
 from datetime import datetime
 
-DEFAULT_RUN = 'C:/Users/zhangyuliang02/AppData/Local/Temp/kb_llm_review/full'
+FEATURE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_RUN = os.path.join(FEATURE_DIR, 'work', 'full')
 
 
 def now():

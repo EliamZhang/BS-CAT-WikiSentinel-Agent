@@ -20,9 +20,10 @@ CATEGORIES = {
     'Department Stores',
 }
 VERDICTS = ('无需更改', '建议修改', '待核实', '建议删除行')
-DEFAULT_RUN = 'C:/Users/zhangyuliang02/AppData/Local/Temp/kb_llm_review/full'
-DEFAULT_RULE_WB = 'merchant_kb_全量复核_漏检与调整.xlsx'
-DEFAULT_OUT = 'merchant_kb_reviewed_AI.xlsx'
+FEATURE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_RUN = os.path.join(FEATURE_DIR, 'work', 'full')
+DEFAULT_RULE_WB = os.path.join(FEATURE_DIR, 'data', 'merchant_kb_全量复核_漏检与调整.xlsx')
+DEFAULT_OUT = os.path.join(FEATURE_DIR, 'data', 'merchant_kb_reviewed_AI.xlsx')
 
 
 def now():
