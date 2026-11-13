@@ -1,0 +1,12 @@
+# Large data files (100MB+ total) — not tracked in git
+merchant_kb.csv
+merchant_kb_全量复核_AI.xlsx
+
+# Runtime artifacts
+.tmp/
+__pycache__/
+*.pyc
+
+# OS
+Thumbs.db
+.DS_Store
